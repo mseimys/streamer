@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vilnius Maps</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        #map {
+            height: 600px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        // http://geojson.io/#map=14.49/54.67732/25.28783
+
+        var map = L.map('map').setView([54.68232, 25.28783], 13.5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const mapMarkers1 = [];
+        const mapMarkers2 = [];
+        const mapMarkers3 = [];
+
+        const bus1Icon = L.icon({
+            iconUrl: 'https://cdn4.iconfinder.com/data/icons/aiga-symbol-signs/612/aiga_bus_bg-256.png',
+            iconSize: [38, 38],
+            iconAnchor: [22, 38],
+            popupAnchor: [-3, -76],
+        });
+        const bus2Icon = L.icon({
+            iconUrl: 'https://cdn4.iconfinder.com/data/icons/aiga-symbol-signs/630/aiga_bus_on_grn_circle-512.png',
+            iconSize: [38, 38],
+            iconAnchor: [22, 38],
+            popupAnchor: [-3, -76],
+        });
+        const bus3Icon = L.icon({
+            iconUrl: 'https://cdn2.iconfinder.com/data/icons/Matchbox-Car-Icons-Mac/128/Mercedes_Coach.png',
+            iconSize: [38, 38],
+            iconAnchor: [22, 38],
+            popupAnchor: [-3, -76],
+        });
+
+        const source = new EventSource('/topic/busdata');
+        source.addEventListener('message', (e) => {
+            const obj =JSON.parse(e.data)
+            console.log(obj);
+            if (obj.busline === '00001') {
+                mapMarkers1.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                const marker1 = L.marker([obj.longitude, obj.latitude], {icon: bus1Icon}).addTo(map);
+                mapMarkers1.push(marker1);
+            }
+            if (obj.busline === '00002') {
+                mapMarkers2.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                const marker2 = L.marker([obj.longitude, obj.latitude], {icon: bus2Icon}).addTo(map);
+                mapMarkers2.push(marker2);
+            }
+            if (obj.busline === '00003') {
+                mapMarkers3.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                const marker3 = L.marker([obj.longitude, obj.latitude], {icon: bus3Icon}).addTo(map);
+                mapMarkers3.push(marker3);
+            }
+        }, false);
+
+    </script>
+
+</body>
+
+</html>
