@@ -1,8 +1,10 @@
+node_modules/
 DATA
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.parcel-cache
 
 # C extensions
 *.so

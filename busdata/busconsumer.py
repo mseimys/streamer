@@ -10,7 +10,7 @@ TOPIC = "busdata"
 
 if __name__ == "__main__":
     config = {
-        "bootstrap.servers": "localhost:29092",
+        "bootstrap.servers": "localhost:9092",
         "group.id": "new_group",
         # 'auto.offset.reset=earliest' to start reading from the beginning of
         # the topic if no committed offsets exist.

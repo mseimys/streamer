@@ -1,3 +1,4 @@
+import os
 import json
 from time import sleep
 from datetime import datetime
@@ -9,6 +10,7 @@ from confluent_kafka import Producer
 
 TOPIC = "busdata"
 BUS = "3"
+KAFKA_SERVERS = os.environ.get("KAFKA_SERVERS", "localhost:9092")
 
 
 def delivery_callback(err, msg):
@@ -23,7 +25,7 @@ def delivery_callback(err, msg):
 
 
 if __name__ == "__main__":
-    config = {"bootstrap.servers": "localhost:29092", "client.id": "busdata1"}
+    config = {"bootstrap.servers": KAFKA_SERVERS, "client.id": "busdata1"}
 
     # Create Producer instance
     producer = Producer(config)
@@ -52,7 +54,7 @@ if __name__ == "__main__":
         # print(message)
         producer.produce(TOPIC, value=message.encode(), key=d["key"], callback=delivery_callback)
         producer.poll(1)
-        sleep(1)
+        sleep(0.1)
         count += 1
     # Typically, flush() should be called prior to shutting down the producer to ensure all outstanding/queued/in-flight messages are delivered.
     print("Waiting for 10s...")

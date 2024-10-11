@@ -1,7 +1,8 @@
-version: '3'
+version: '3.8'
+name: kafka-cluster
 services:
   kafka1:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.4.1
     container_name: kafka1
     hostname: kafka1
     ports:
@@ -22,7 +23,7 @@ services:
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
   kafka2:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.4.1
     container_name: kafka2
     hostname: kafka2
     ports:
@@ -43,7 +44,7 @@ services:
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
   kafka3:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.4.1
     container_name: kafka3
     hostname: kafka3
     ports:
@@ -64,7 +65,7 @@ services:
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
   schema-registry:
-    image: confluentinc/cp-schema-registry
+    image: confluentinc/cp-schema-registry:7.4.1
     container_name: schema-registry
     hostname: schema-registry
     ports:
@@ -79,19 +80,47 @@ services:
       - kafka3
 
   kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
+    image: provectuslabs/kafka-ui:master
+    user: "${UID}:${GID}"
+    restart: unless-stopped
     depends_on:
       - kafka1
       - kafka2
       - kafka3
+      - schema-registry
+    ports:
+      - "48081:8080"
     environment:
-      DYNAMIC_CONFIG_ENABLED: 'true'
-      KAFKA_CLUSTERS_0_NAME: matas-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:29092,kafka2:29092,kafka3:29092'
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29092,kafka2:29092,kafka3:29092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      # KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: connector
+      # KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://connect:8083
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  ksqldb-server:
+    image: confluentinc/ksqldb-server:0.29.0
+    hostname: ksqldb-server
+    container_name: ksqldb-server
+    ports:
+      - "8088:8088"
+    environment:
+      KSQL_LISTENERS: http://0.0.0.0:8088
+      KSQL_BOOTSTRAP_SERVERS: 'kafka1:29092,kafka2:29092,kafka3:29092'
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+
+  ksqldb-cli:
+    image: confluentinc/ksqldb-cli:0.29.0
+    container_name: ksqldb-cli
+    depends_on:
+      - ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
 
 networks:
   default:
-    name: my-network
+    name: kafka-cluster-network
