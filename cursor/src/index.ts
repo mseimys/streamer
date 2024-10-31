@@ -1,6 +1,6 @@
+const heatmapUpdateInterval = 1000; // Time (in ms) to wait before updating the heatmap
 const reconnectInterval = 3000; // Time (in ms) to wait before attempting to reconnect
 let websocket: WebSocket | null = null;
-let fetchInProgress = false;
 
 function stringToColor(str: string): string {
   // Create a hash from the string
@@ -65,18 +65,18 @@ function connect() {
 }
 
 function fetchAndDisplayHeatmap() {
-  if (fetchInProgress) {
-    console.log("Fetch already in progress, skipping...");
-    return;
-  }
   const heatmap = document.getElementById("heatmap") as HTMLImageElement;
   const timestamp = new Date().getTime();
   const newImage = new Image();
   newImage.src = `http://localhost:8000/heatmap.png?${timestamp}`;
-  fetchInProgress = true;
   newImage.onload = () => {
+    console.log("Loaded new heatmap image");
     heatmap.src = newImage.src;
-    fetchInProgress = false;
+    setTimeout(fetchAndDisplayHeatmap, heatmapUpdateInterval);
+  };
+  newImage.onerror = (error) => {
+    console.error("Error loading heatmap image:", error);
+    setTimeout(fetchAndDisplayHeatmap, heatmapUpdateInterval);
   };
 }
 
@@ -102,5 +102,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fetch and redraw the heatmap every few seconds
   fetchAndDisplayHeatmap();
-  setInterval(fetchAndDisplayHeatmap, 1000);
 });
