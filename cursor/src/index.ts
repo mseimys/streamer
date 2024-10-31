@@ -1,5 +1,6 @@
 const reconnectInterval = 3000; // Time (in ms) to wait before attempting to reconnect
 let websocket: WebSocket | null = null;
+let fetchInProgress = false;
 
 function stringToColor(str: string): string {
   // Create a hash from the string
@@ -17,6 +18,7 @@ function stringToColor(str: string): string {
 
   return color;
 }
+
 function connect() {
   websocket = new WebSocket("ws://localhost:8080/");
 
@@ -62,6 +64,22 @@ function connect() {
   };
 }
 
+function fetchAndDisplayHeatmap() {
+  if (fetchInProgress) {
+    console.log("Fetch already in progress, skipping...");
+    return;
+  }
+  const heatmap = document.getElementById("heatmap") as HTMLImageElement;
+  const timestamp = new Date().getTime();
+  const newImage = new Image();
+  newImage.src = `http://localhost:8000/heatmap.png?${timestamp}`;
+  fetchInProgress = true;
+  newImage.onload = () => {
+    heatmap.src = newImage.src;
+    fetchInProgress = false;
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   connect();
 
@@ -74,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     if (websocket && websocket.readyState === WebSocket.OPEN) {
       console.log("Sending message", message);
-      // Sending a message to the WebSocket server
       websocket.send(JSON.stringify(message));
     } else {
       console.log("Cannot send message: WebSocket connection is not open");
@@ -82,4 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.body.addEventListener("mousemove", captureMouseMove);
+
+  // Fetch and redraw the heatmap every few seconds
+  fetchAndDisplayHeatmap();
+  setInterval(fetchAndDisplayHeatmap, 1000);
 });

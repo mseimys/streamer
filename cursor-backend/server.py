@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
 import json
-
 import asyncio
-import signal
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 import websockets
-
+from aiohttp import web
 
 HOST = "localhost"
 PORT = 8080
+HTTP_PORT = 8000
 
 # Kafka consumer configuration
 KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
 KAFKA_TOPIC = "cursor"
-
 
 # Set of connected WebSocket clients
 connected_clients = set()
@@ -60,6 +58,10 @@ async def websocket_handler(websocket, path, producer):
         connected_clients.remove(websocket)
 
 
+async def handle_heatmap(request):
+    return web.FileResponse("heatmap.png")
+
+
 async def main():
     consumer = AIOKafkaConsumer(
         KAFKA_TOPIC,
@@ -76,6 +78,14 @@ async def main():
     server = await websockets.serve(lambda ws, path: websocket_handler(ws, path, producer), HOST, PORT)
     print(f"WebSocket server is running on ws://{HOST}:{PORT}")
 
+    app = web.Application()
+    app.router.add_get("/heatmap.png", handle_heatmap)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, HOST, HTTP_PORT)
+    await site.start()
+    print(f"HTTP server is running on http://{HOST}:{HTTP_PORT}")
+
     try:
         await asyncio.Future()  # run forever
     except asyncio.CancelledError:
@@ -85,6 +95,7 @@ async def main():
         await producer.stop()
         server.close()
         await server.wait_closed()
+        await runner.cleanup()
         print("Shutdown complete")
 
 
