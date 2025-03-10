@@ -2,6 +2,7 @@ cursor-backend/heatmap.png
 scaler/count.txt
 node_modules/
 DATA
+TEMP
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
