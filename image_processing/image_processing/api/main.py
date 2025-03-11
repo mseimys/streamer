@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     print("Starting up...")
     await init_db()
     kafka_producer = producer.KafkaProducer(bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS)
-    ensure_topics_exist(kafka_producer, [settings.KAFKA_TOPIC_IMAGES])
+    ensure_topics_exist(kafka_producer.producer, [settings.KAFKA_TOPIC_IMAGES])
     app.state.producer = kafka_producer
     yield
     kafka_producer.close()

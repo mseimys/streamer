@@ -36,7 +36,7 @@ def upload_images(folder: Path, endpoint_url: str):
 
                     # Check if upload was successful
                     if response.status_code == 200:
-                        print(f"Successfully uploaded: {file_path.name}")
+                        print(f"Successfully uploaded: {file_path.name}", response.json())
                         uploaded_count += 1
                     else:
                         print(f"Failed to upload {file_path.name}: Status code {response.status_code}")

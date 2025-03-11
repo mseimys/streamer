@@ -13,6 +13,7 @@ env = { PYTHONPATH = "." }
 
 [tool.poe.tasks]
 test = "pytest -v"
+shell = "python image_processing/shell.py"
 make_migrations = "alembic revision --autogenerate -m "
 migrate = "alembic upgrade head"
 save_features = "python image_processing/workers/save_features.py"
@@ -42,6 +43,7 @@ confluent-kafka = "^2.8.2"
 pillow = "^11.1.0"
 open-clip-torch = "^2.31.0"
 psycopg2-binary = "^2.9.10"
+scikit-learn = "^1.6.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
