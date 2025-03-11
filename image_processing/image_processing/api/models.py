@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlmodel import SQLModel, Field, Column, DateTime, JSON
 from pydantic import computed_field
 
 from image_processing.settings import settings
@@ -22,6 +22,7 @@ class Image(ImageCreate, table=True):
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=lambda: datetime.now(ZoneInfo("UTC"))
     )
+    embeddings: list[float] = Field(sa_column=Column(JSON, nullable=True))
 
 
 class ImagePublic(ImageBase):

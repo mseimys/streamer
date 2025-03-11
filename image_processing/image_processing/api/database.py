@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from image_processing.settings import settings
 
-engine = create_async_engine(settings.DATABASE_URL, echo=True, future=True)
+engine = create_async_engine(settings.ASYNC_DATABASE_URL, echo=True, future=True)
 
 
 async def init_db():

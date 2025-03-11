@@ -13,9 +13,10 @@ env = { PYTHONPATH = "." }
 
 [tool.poe.tasks]
 test = "pytest -v"
-
-[tool.poe.tasks.processor]
-cmd = "python image_processing/workers/image_processor.py"
+make_migrations = "alembic revision --autogenerate -m "
+migrate = "alembic upgrade head"
+save_features = "python image_processing/workers/save_features.py"
+processor = "python image_processing/workers/image_processor.py"
 
 [tool.poe.tasks.run]
 use_exec = true  # or we get stuck inside asyncio loop
@@ -40,6 +41,7 @@ aiofiles = "^24.1.0"
 confluent-kafka = "^2.8.2"
 pillow = "^11.1.0"
 open-clip-torch = "^2.31.0"
+psycopg2-binary = "^2.9.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

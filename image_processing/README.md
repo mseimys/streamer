@@ -9,6 +9,19 @@ curl -sSL https://install.python-poetry.org | python -
 pip install poethepoet
 ```
 
+Run MinIO storage locally:
+
+```
+docker run -d --restart=always \
+   -p 9000:9000 \
+   -p 9001:9001 \
+   --name minio \
+   -v ~/data:/data \
+   -e "MINIO_ROOT_USER=admin" \
+   -e "MINIO_ROOT_PASSWORD=123456789" \
+   quay.io/minio/minio server /data --console-address ":9001"
+```
+
 # Structure
 
 1. API where you upload an image (FastAPI) store it and then send it to Kafka topic to calculate a vector

@@ -14,7 +14,7 @@ from image_processing.api.models import Image  # noqa: F401
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.render_as_string(False))
+config.set_main_option("sqlalchemy.url", settings.ASYNC_DATABASE_URL.render_as_string(False))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -71,7 +71,7 @@ async def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = create_async_engine(settings.DATABASE_URL, echo=True, future=True)
+    connectable = create_async_engine(settings.ASYNC_DATABASE_URL, echo=True, future=True)
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

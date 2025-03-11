@@ -16,7 +16,8 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 
     DATABASE = {
-        "ENGINE": os.getenv("DB_ENGINE", "sqlite"),
+        "ASYNC_ENGINE": os.getenv("DB_ASYNC_ENGINE", "postgresql+asyncpg"),
+        "ENGINE": os.getenv("DB_ENGINE", "postgresql+psycopg2"),
         "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
         "USER": os.getenv("DB_USER", ""),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
@@ -26,6 +27,7 @@ class Settings:
     UPLOAD_DIR: Path = BASE_DIR.parent / "DATA"
     DOMAIN: str = os.getenv("DOMAIN", "http://127.0.0.1:5000")
     DATABASE_URL: URL = None
+    ASYNC_DATABASE_URL: URL = None
 
     KAFKA_BOOTSTRAP_SERVERS: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092,localhost:9093,localhost:9094")
     KAFKA_TOPIC_IMAGES: str = "images"
@@ -36,6 +38,14 @@ class Settings:
         print("Settings file loaded:", SETTINGS_FILE)
         print("Upload directory:", self.UPLOAD_DIR)
         self.UPLOAD_DIR.mkdir(exist_ok=True)
+        self.ASYNC_DATABASE_URL = URL.create(
+            drivername=self.DATABASE["ASYNC_ENGINE"],
+            username=self.DATABASE["USER"],
+            password=self.DATABASE["PASSWORD"],
+            host=self.DATABASE["HOST"],
+            port=self.DATABASE["PORT"],
+            database=self.DATABASE["NAME"],
+        )
         self.DATABASE_URL = URL.create(
             drivername=self.DATABASE["ENGINE"],
             username=self.DATABASE["USER"],
