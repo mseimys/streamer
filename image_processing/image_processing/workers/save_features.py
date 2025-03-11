@@ -10,12 +10,13 @@ from image_processing.workers import models
 from image_processing.api import models as api_models
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", handlers=[logging.StreamHandler()])
+logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
 
 log = logging.getLogger(__name__)
 
 
 def save_features_to_db(session: Session, image_result: models.ImageResult):
-    print("Processing image:", image_result.id, image_result.features.embeddings)
+    log.info(f"Processing image ID={image_result.id}")
     statement = select(api_models.Image).where(api_models.Image.id == image_result.id)
     image = session.scalars(statement).first()
     image.embeddings = image_result.features.embeddings
@@ -31,7 +32,7 @@ def consumer():
             "auto.offset.reset": "earliest",
         }
     )
-    engine = create_engine(settings.DATABASE_URL, echo=True, future=True)
+    engine = create_engine(settings.DATABASE_URL, future=True)
     Session = sessionmaker(engine)
 
     if not ensure_topics_exist(consumer, [settings.KAFKA_TOPIC_IMAGES_VECTOR]):
@@ -56,6 +57,7 @@ def consumer():
             except Exception as e:
                 # die on error
                 raise e
+            break
             consumer.commit()
     except KeyboardInterrupt:
         pass
