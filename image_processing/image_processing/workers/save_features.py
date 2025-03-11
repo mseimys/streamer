@@ -57,7 +57,6 @@ def consumer():
             except Exception as e:
                 # die on error
                 raise e
-            break
             consumer.commit()
     except KeyboardInterrupt:
         pass
