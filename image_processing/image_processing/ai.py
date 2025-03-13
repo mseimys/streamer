@@ -42,6 +42,9 @@ def main():
     true_test_labels: list[float] = all_labels["TRUE_TEST"]
     false_test_labels: list[float] = all_labels["FALSE_TEST"]
 
+    print("TRUE_TEST count=", len(true_test_labels))
+    print("FALSE_TEST count=", len(false_test_labels))
+
     # Prepare the data
     X = np.array(true_test_labels + false_test_labels)
     y = np.array([1] * len(true_test_labels) + [0] * len(false_test_labels))

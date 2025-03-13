@@ -13,15 +13,13 @@ class ImageBase(SQLModel):
     mimetype: str
 
 
-class ImageCreate(ImageBase):
-    filepath: str = Field(unique=True, nullable=False)
-
-
-class Image(ImageCreate, table=True):
+class Image(ImageBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=lambda: datetime.now(ZoneInfo("UTC"))
     )
+    filepath: str = Field(unique=True, nullable=False)
+    filepath_preview: str = Field(default=None, nullable=True)
     embeddings: list[float] = Field(sa_column=Column(JSON, nullable=True))
 
 

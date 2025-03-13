@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from image_processing.settings import settings
 from image_processing.api.database import get_db, init_db
 from image_processing.api import repository, utils, models, producer
-from image_processing.utils import ensure_topics_exist
 from image_processing.workers.models import ImageForProcessing
 
 
@@ -18,8 +17,7 @@ from image_processing.workers.models import ImageForProcessing
 async def lifespan(app: FastAPI):
     print("Starting up...")
     await init_db()
-    kafka_producer = producer.KafkaProducer(bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS)
-    ensure_topics_exist(kafka_producer.producer, [settings.KAFKA_TOPIC_IMAGES])
+    kafka_producer = producer.KafkaProducer(topics=[settings.KAFKA_TOPIC_IMAGES])
     app.state.producer = kafka_producer
     yield
     kafka_producer.close()
@@ -35,11 +33,7 @@ async def get_kafka_producer():
 
 
 @app.get("/images/", response_model=list[models.ImagePublic])
-async def get_images(
-    db: Session = Depends(get_db),
-    producer: producer.KafkaProducer = Depends(get_kafka_producer),
-):
-    print(producer)
+async def get_images(db: Session = Depends(get_db)):
     records = await repository.get_image_records(db)
     return [models.ImagePublic(**r.model_dump()) for r in records]
 
@@ -103,7 +97,26 @@ async def get_image_content(image_id: int, db: Session = Depends(get_db)):
     return StreamingResponse(
         utils.file_reader(file_path),
         media_type=image.mimetype,
-        headers={"Content-Disposition": f'attachment; filename="{image.filename}"'},
+        headers={"Content-Disposition": f'inline; filename="{image.filename}"'},
+    )
+
+
+@app.get("/images/{image_id}/preview")
+async def get_image_preview(image_id: int, db: Session = Depends(get_db)):
+    """Serve a file preview."""
+    try:
+        image = await repository.get_image_record(db, image_id)
+    except repository.NotFoundError:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    file_path = Path(image.filepath_preview)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File does not exist")
+
+    return StreamingResponse(
+        utils.file_reader(file_path),
+        media_type="image/jpeg",
+        headers={"Content-Disposition": f'inline; filename="{file_path.name}"'},
     )
 
 
