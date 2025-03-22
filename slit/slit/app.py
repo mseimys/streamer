@@ -1,13 +1,15 @@
+import time
+from datetime import datetime
 from dataclasses import dataclass
 
-from datetime import datetime
+import extra_streamlit_components as stx
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
-import time
 
 print("Executing app.py")
 
 USER_INPUT = "user_input"
+LAST_CHAT = "last_chat"
 
 
 @dataclass
@@ -15,6 +17,14 @@ class Message:
     role: str
     text: str
     time: datetime
+
+
+# @st.cache_resource
+def get_cookie_manager():
+    return stx.CookieManager()
+
+
+cookie_manager = get_cookie_manager()
 
 
 def handle_click(container):
@@ -42,11 +52,13 @@ def render_message(messages: DeltaGenerator, message: Message):
 def handle_submit(messages: DeltaGenerator, status: DeltaGenerator):
     print("app.py:handle_submit")
     text = st.session_state[USER_INPUT]
-    message = Message(role="user", text=text, time=datetime.now())
+    timestamp = datetime.now()
+    message = Message(role="user", text=text, time=timestamp)
     st.session_state["messages"].append(message)
     render_message(messages, message)
     response = async_task(status)
     st.session_state["messages"].append(response)
+    cookie_manager.set(LAST_CHAT, timestamp.isoformat())
 
 
 def initialize_state():
@@ -57,12 +69,22 @@ def initialize_state():
     if "status" not in st.session_state:
         st.session_state["status"] = ""
 
+    cookies = st.context.cookies
+    print("Cookies:", cookies.to_dict())
+    last_chat_cookie = cookie_manager.get(LAST_CHAT)
+    if LAST_CHAT not in st.session_state:
+        print("No last chat in state, will set it to", last_chat_cookie)
+    st.session_state[LAST_CHAT] = last_chat_cookie
+
 
 def render():
     initialize_state()
 
     print("app.py:render")
     st.title("Hello Streamlit!")
+    if st.session_state[LAST_CHAT]:
+        st.write("Last chat: ", st.session_state[LAST_CHAT])
+    # st.write(st.context.cookies)
     st.write("Message count: ", len(st.session_state["messages"]))
     messages = st.container()
     status = st.empty()
