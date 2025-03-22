@@ -1,0 +1,6 @@
+[tool.poe]
+env = { PYTHONPATH = "." }
+
+[tool.poe.tasks]
+test = "pytest -v"
+run = "streamlit run slit/app.py"
