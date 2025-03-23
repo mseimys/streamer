@@ -41,7 +41,7 @@ def async_task(status: DeltaGenerator):
         time.sleep(2)
 
     status.empty()  # optional
-    return Message(role="assistant", text="Async task response", time=datetime.now())
+    return "Async task response"
 
 
 def render_message(messages: DeltaGenerator, message: Message):
@@ -57,7 +57,9 @@ def handle_submit(messages: DeltaGenerator, status: DeltaGenerator):
     st.session_state["messages"].append(message)
     render_message(messages, message)
     response = async_task(status)
-    st.session_state["messages"].append(response)
+    st.session_state["messages"].append(
+        Message(role="assistant", text=response, time=datetime.now())
+    )
     cookie_manager.set(LAST_CHAT, timestamp.isoformat())
 
 
