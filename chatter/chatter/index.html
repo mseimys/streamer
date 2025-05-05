@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assistant Streaming</title>
+    <style>
+        #output {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            font-family: monospace;
+            padding: 10px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Assistant Streaming Demo</h1>
+    <input type="text" id="queryInput" value='Analyze this json: {"hello": 123}' style="width: 300px;" />
+    <button onclick="startStreaming()">Call Assistant</button>
+
+    <div id="output"></div>
+
+    <script>
+        async function startStreaming() {
+            const outputDiv = document.getElementById('output');
+            outputDiv.textContent = ''; // Clear previous content
+
+            const response = await fetch(`/stream-assistant?q=${queryInput.value}`);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = decoder.decode(value);
+                outputDiv.textContent += text; // Append streamed text
+            }
+        }
+    </script>
+</body>
+</html>
