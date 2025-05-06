@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>Assistant Streaming Demo</h1>
-    <input type="text" id="queryInput" value='Analyze this json: {"hello": 123}' style="width: 300px;" />
+    <input type="text" id="queryInput" value='write a two paragraph story and draw a picture for that story' style="width: 300px;" />
     <button onclick="startStreaming()">Call Assistant</button>
 
     <div id="output"></div>
@@ -25,7 +25,7 @@
             const outputDiv = document.getElementById('output');
             outputDiv.textContent = ''; // Clear previous content
 
-            const response = await fetch(`/stream-assistant?q=${queryInput.value}`);
+            const response = await fetch(`/ask?q=${queryInput.value}`);
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 

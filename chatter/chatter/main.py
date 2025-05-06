@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 
 from chatter.config import settings
 from chatter.api import assistant
+from chatter.api import agent
 from chatter.services.event_handler import EventHandler
 
 logging.basicConfig(level=logging.INFO)
@@ -60,3 +61,4 @@ async def stream_assistant(q: str = "tell me a short story"):
 
 
 app.include_router(assistant.router, prefix=settings.API_PREFIX, tags=["Assistant"])
+app.include_router(agent.router)
