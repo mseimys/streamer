@@ -36,7 +36,7 @@ def draw_an_image_given_prompt(prompt: str) -> str:
 async def gen(question: str):
     agent = Agent(
         name="Assistant",
-        model="gpt-4.1",
+        model="gpt-4.1-nano",
         instructions="You are a helpful assistant",
         tools=[analyze_json, draw_an_image_given_prompt],
     )
@@ -52,6 +52,6 @@ async def gen(question: str):
     print("ALL DONE:", json.dumps(result.to_input_list(), indent=2))
 
 
-@router.get("/ask")
+@router.post("/ask")
 async def ask(q: str = "tell me a short story"):
     return StreamingResponse(gen(question=q), media_type="text/event-stream")

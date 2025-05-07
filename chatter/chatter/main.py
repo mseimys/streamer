@@ -4,6 +4,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 
 from chatter.config import settings
@@ -14,6 +15,13 @@ from chatter.services.event_handler import EventHandler
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title=settings.PROJECT_NAME)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/", response_class=HTMLResponse)

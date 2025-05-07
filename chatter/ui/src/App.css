@@ -1,0 +1,21 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.card {
+  padding: 2em;
+}
+
+code {
+  margin-top: 4px;
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  white-space: pre-wrap;
+}

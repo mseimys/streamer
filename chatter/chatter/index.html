@@ -25,7 +25,7 @@
             const outputDiv = document.getElementById('output');
             outputDiv.textContent = ''; // Clear previous content
 
-            const response = await fetch(`/ask?q=${queryInput.value}`);
+            const response = await fetch(`/ask?q=${queryInput.value}`, {method: "POST"});
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 
