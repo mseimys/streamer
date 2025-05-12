@@ -1,10 +1,12 @@
 import json
 from openai import AsyncOpenAI
 from agents import Agent, ItemHelpers, Runner, function_tool, set_default_openai_key
+from agents.mcp import MCPServerSse
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from openai.types.responses import ResponseTextDeltaEvent
+
 
 from chatter.services.event_handler import EventHandler
 from chatter.config import settings
@@ -34,20 +36,24 @@ def draw_an_image_given_prompt(prompt: str) -> str:
 
 
 async def gen(question: str):
-    agent = Agent(
-        name="Assistant",
-        model="gpt-4.1-nano",
-        instructions="You are a helpful assistant",
-        tools=[analyze_json, draw_an_image_given_prompt],
-    )
-    result = Runner.run_streamed(agent, input=question)
-    async for event in result.stream_events():
-        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
-            # print("\n---------EVENT >", end="", flush=True)
-            print(event.data.delta, end="", flush=True)
-            yield event.data.delta
-        elif event.type != "raw_response_event":
-            print("EVENT >", event)
+    async with MCPServerSse(params={"url": "http://localhost:8888/sse"}) as mcp_server:
+        print("Connected to MCP server:", mcp_server)
+        agent = Agent(
+            name="Assistant",
+            model="gpt-4.1-nano",
+            instructions="You are a helpful assistant",
+            tools=[analyze_json, draw_an_image_given_prompt],
+            mcp_servers=[mcp_server],
+        )
+        result = Runner.run_streamed(agent, input=question)
+
+        async for event in result.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                # print("\n---------EVENT >", end="", flush=True)
+                print(event.data.delta, end="", flush=True)
+                yield event.data.delta
+            elif event.type != "raw_response_event":
+                print("EVENT >", event)
 
     print("ALL DONE:", json.dumps(result.to_input_list(), indent=2))
 

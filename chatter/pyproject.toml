@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.12",
+    "fastmcp>=2.3.3",
     "openai>=1.76.0",
     "openai-agents>=0.0.14",
     "poethepoet>=0.34.0",
@@ -24,3 +25,4 @@ env = { PYTHONPATH = "." }
 
 [tool.poe.tasks]
 dev = "fastapi dev chatter/main.py --port 5000 --host 0.0.0.0 --reload"
+mcp = "chatter_mcp/server.py"
